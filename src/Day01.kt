@@ -1,21 +1,68 @@
 fun main() {
     fun part1(input: List<String>): Int {
-        return input.size
+        var zeros = 0
+        val safe = Safe(
+            fullDialListener = { position -> if (position == 0) zeros++ },
+            dialListener = { }
+        )
+
+        input.forEach {
+            val turnLeft = it[0] == 'L'
+            val number = it.substring(1).trim().toInt()
+            safe.turnDial(left = turnLeft, amount = number)
+        }
+
+        return zeros
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        var zeros = 0
+        val safe = Safe(
+            fullDialListener = { },
+            dialListener = { position -> if (position == 0) zeros++ }
+        )
+
+        input.forEach {
+            val turnLeft = it[0] == 'L'
+            val number = it.substring(1).trim().toInt()
+            safe.turnDial(left = turnLeft, amount = number)
+        }
+
+        return zeros
     }
 
-    // Test if implementation meets criteria from the description, like:
-    check(part1(listOf("test_input")) == 1)
-
-    // Or read a large test input from the `src/Day01_test.txt` file:
-    val testInput = readInput("Day01_test")
-    check(part1(testInput) == 1)
-
-    // Read the input from the `src/Day01.txt` file.
     val input = readInput("Day01")
     part1(input).println()
     part2(input).println()
+}
+
+fun interface DialListener {
+    fun onDialChanged(position:Int)
+}
+
+class Safe(
+    val fullDialListener: DialListener,
+    val dialListener: DialListener,
+) {
+    var position = 50
+    val maxPosition = 99
+    val minPosition = 0
+
+    fun turnDial(left:Boolean, amount:Int) {
+        if (left) {
+            repeat(amount) { left() }
+        } else {
+            repeat(amount) { right() }
+        }
+        fullDialListener.onDialChanged(position)
+    }
+
+    fun left() {
+        if (position == minPosition) position = maxPosition else position--
+        dialListener.onDialChanged(position)
+    }
+    fun right() {
+        if (position == maxPosition) position = minPosition else position++
+        dialListener.onDialChanged(position)
+    }
 }
